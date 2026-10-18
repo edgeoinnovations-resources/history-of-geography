@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>From Songlines to the Cloud</title>
+  <meta name="description" content="A web storymap of the history of geography and spatial thinking, in six episodes: from the map in your head to the cloud-native geospatial stack. Time and space, with text and audio.">
+  <meta property="og:title" content="From Songlines to the Cloud: A History of Geography">
+  <meta property="og:description" content="An interactive storymap in time and space, with the six-episode podcast and transcripts.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23002244'/><circle cx='50' cy='50' r='30' fill='none' stroke='%2300C5CD' stroke-width='6'/><ellipse cx='50' cy='50' rx='12' ry='30' fill='none' stroke='%2300C5CD' stroke-width='6'/><line x1='20' y1='50' x2='80' y2='50' stroke='%2300C5CD' stroke-width='6'/></svg>">
+</head>
+<body>
+  <div id="map" role="img" aria-label="Interactive world map that follows the story"></div>
+
+  <header id="header">
+    <div id="brand"><strong>From Songlines to the Cloud</strong><span>A history of geography and spatial thinking</span></div>
+    <nav id="episodes" aria-label="Episodes"></nav>
+    <div id="now"><span id="now-date">Scroll to begin</span><span id="now-place"></span></div>
+    <button class="hbtn accent" id="listen-current" title="Play the podcast episode for this part of the story">▶ Listen</button>
+    <button class="hbtn" id="btn-transcript">Transcript</button>
+    <button class="hbtn" id="btn-about">About</button>
+  </header>
+
+  <div id="player" aria-label="Podcast player">
+    <button id="play" aria-label="Play">▶</button>
+    <span id="audio-label">From Songlines to the Cloud</span>
+    <span id="audio-time">0:00</span>
+    <div id="seek-wrap"><div id="seek-marks"></div><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek"></div>
+    <button id="player-close" aria-label="Hide player" onclick="document.getElementById('player').classList.remove('open')">×</button>
+    <audio id="audio"></audio>
+  </div>
+
+  <main id="story"></main>
+
+  <footer id="timeline" aria-label="Timeline">
+    <div id="tl-inner">
+      <div id="tl-label">c. 17,000 BCE</div>
+      <div id="tl-bands"></div>
+      <div id="tl-marker"></div>
+      <div id="tl-axis" role="group" aria-label="Events in time; click to jump"></div>
+      <div id="tl-ticks"></div>
+    </div>
+  </footer>
+
+  <aside id="drawer" aria-hidden="true">
+    <div id="drawer-head"><h2 id="drawer-title">Transcript</h2><button class="xbtn" id="drawer-close" aria-label="Close">×</button></div>
+    <div id="drawer-tabs" aria-label="Choose episode"></div>
+    <div id="drawer-body"></div>
+  </aside>
+
+  <div id="about" aria-hidden="true" role="dialog" aria-labelledby="about-title">
+    <div class="modal">
+      <button class="xbtn" id="about-close" aria-label="Close">×</button>
+      <h2 id="about-title">About this storymap</h2>
+      <p><em>From Songlines to the Cloud</em> is a six-episode history of geography and spatial thinking written and narrated by Paul Strootman for EdGeoInnovations. This page retells it in <strong>time</strong> (the timeline at the bottom) and <strong>space</strong> (the map behind), with the podcast audio and full transcripts alongside.</p>
+      <h3>How to use it</h3>
+      <ul>
+        <li>Scroll to move through the story. Each card moves the map and the timeline marker.</li>
+        <li>Click any dot or coloured band on the timeline to jump through time. Use ← → on a keyboard.</li>
+        <li>Press <strong>Listen</strong> to hear the episode for the part you are reading; the player sits under the header.</li>
+        <li>The map is always live: drag, zoom, tilt, and click a marker for its name. The URL updates so you can link to any moment.</li>
+      </ul>
+      <h3>The stack (all open, all free to host)</h3>
+      <ul>
+        <li><strong>MapLibre GL JS</strong> renders the map and the globe in the browser.</li>
+        <li><strong>OpenFreeMap</strong> serves the basemap from <strong>OpenStreetMap</strong> data (© OpenStreetMap contributors, ODbL). The streets you see in Port-au-Prince and Regent's Park are the volunteer map in the story.</li>
+        <li><strong>Natural Earth</strong> 1:110m country boundaries, packed into one <strong>PMTiles</strong> archive with Tippecanoe and read by HTTP range requests straight from GitHub Pages: no map server.</li>
+        <li><strong>NASA GIBS Blue Marble</strong> imagery fades in for the satellite-era steps.</li>
+        <li>Places, routes and areas are small GeoJSON files built from a gazetteer script in the repository. Long voyages are drawn along great circles; several routes (Ibn Baṭṭūṭa, Cook, Humboldt) and Mackinder's pivot area are deliberately simplified.</li>
+        <li><strong>Scrollama</strong> ties scrolling to the map and timeline. Hosted on <strong>GitHub Pages</strong>.</li>
+      </ul>
+      <h3>Sources</h3>
+      <p>Every claim on the cards comes from the episode scripts and the long-form review they are based on, which carries the full reference list. Read the transcripts here, or open the repository for the review, research notes and bibliography: <a href="https://github.com/edgeoinnovations-resources/history-of-geography" target="_blank" rel="noopener">github.com/edgeoinnovations-resources/history-of-geography</a>.</p>
+      <p class="cue" style="color:#5b6b7d;font-size:13px">Timeline note: the time axis is deliberately non-linear. Deep time is compressed and the last two centuries are stretched, so that the modern episodes have room.</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@4.4.1/dist/pmtiles.js"></script>
+  <script src="https://unpkg.com/scrollama@3.2.0/build/scrollama.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/chapters.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
