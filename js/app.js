@@ -34,6 +34,21 @@
   }
   function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
+  /* ------------------------------------------------------------------ map pictures */
+  // Pictures of the maps the story refers to live in js/maps.js, keyed by step id.
+  const MAPS = window.MAPS || {};
+  function mapSource(m) { return m.source || ("https://commons.wikimedia.org/wiki/" + encodeURIComponent(m.commons.replace(/ /g, "_"))); }
+  function mapHiRes(m) { return m.commons ? "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(m.commons.replace(/^File:/, "").replace(/ /g, "_")) + "?width=2000" : null; }
+  function mapsHtml(stepId) {
+    const list = MAPS[stepId]; if (!list || !list.length) return "";
+    const multi = list.length > 1;
+    return `<div class="maps${multi ? " multi" : ""}">` + list.map((m, k) => `
+      <figure class="mapfig">
+        <button type="button" class="mapbtn" data-step="${stepId}" data-k="${k}" title="Enlarge" aria-label="Enlarge: ${escapeHtml(m.title)}"><img src="img/maps/${m.file}" alt="${escapeHtml(m.title)}" loading="lazy"></button>
+        <figcaption><strong>${escapeHtml(m.title)}</strong>${multi ? "" : " " + escapeHtml(m.caption)} <a href="${mapSource(m)}" target="_blank" rel="noopener">Source ↗</a></figcaption>
+      </figure>`).join("") + `</div>`;
+  }
+
   /* ------------------------------------------------------------------ build cards */
   const story = $("#story");
   steps.forEach((s, i) => {
@@ -78,6 +93,7 @@
         <div class="badges"><span class="badge time">${s.date}</span><span class="badge place">${s.place}</span></div>
         <h3>${s.title}</h3>
         <p>${s.text}</p>
+        ${mapsHtml(s.id)}
       </div>`;
     }
     story.appendChild(el);
@@ -283,6 +299,32 @@
     };
   })();
 
+  /* ------------------------------------------------------------------ map lightbox */
+  const lb = $("#lightbox"), lbImg = $("#lb-img"), lbTitle = $("#lb-title"), lbCap = $("#lb-caption"), lbCredit = $("#lb-credit"), lbCount = $("#lb-count");
+  let lbStep = null, lbIndex = 0;
+  function lbOpen() { return lb.classList.contains("open"); }
+  function showLightbox() {
+    const list = MAPS[lbStep] || []; const m = list[lbIndex]; if (!m) return;
+    lbImg.src = "img/maps/" + m.file; lbImg.alt = m.title; lbImg.dataset.file = m.file;
+    const hi = mapHiRes(m);
+    if (hi) { const pre = new Image(); pre.onload = () => { if (lbImg.dataset.file === m.file && lbOpen()) lbImg.src = hi; }; pre.src = hi; }
+    lbTitle.textContent = m.title; lbCap.textContent = m.caption;
+    lbCredit.innerHTML = `${escapeHtml(m.credit)} <a href="${mapSource(m)}" target="_blank" rel="noopener">View source ↗</a>`;
+    lbCount.textContent = list.length > 1 ? `${lbIndex + 1} / ${list.length}` : "";
+    $("#lb-prev").hidden = $("#lb-next").hidden = list.length < 2;
+  }
+  function openLightbox(stepId, k) {
+    lbStep = stepId; lbIndex = k || 0; showLightbox();
+    lb.classList.add("open"); lb.setAttribute("aria-hidden", "false"); $("#lb-close").focus();
+  }
+  function closeLightbox() { lb.classList.remove("open"); lb.setAttribute("aria-hidden", "true"); lbImg.removeAttribute("src"); }
+  function lbNav(d) { const n = (MAPS[lbStep] || []).length; if (n < 2) return; lbIndex = (lbIndex + d + n) % n; showLightbox(); }
+  story.addEventListener("click", e => { const b = e.target.closest(".mapbtn"); if (b) openLightbox(b.dataset.step, +b.dataset.k); });
+  $("#lb-close").addEventListener("click", closeLightbox);
+  $("#lb-prev").addEventListener("click", () => lbNav(-1));
+  $("#lb-next").addEventListener("click", () => lbNav(1));
+  lb.addEventListener("click", e => { if (e.target === lb || e.target.id === "lb-figure") closeLightbox(); });
+
   /* ------------------------------------------------------------------ scrollama */
   const scroller = scrollama();
   scroller.setup({ step: ".step", offset: 0.55, progress: false })
@@ -292,6 +334,13 @@
   // keyboard: ← → move between steps
   window.addEventListener("keydown", e => {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (lbOpen()) {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowRight") lbNav(1);
+      else if (e.key === "ArrowLeft") lbNav(-1);
+      else return;
+      e.preventDefault(); return;
+    }
     if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
       const n = Math.min(steps.length - 1, Math.max(0, current + (e.key === "ArrowRight" ? 1 : -1)));
       document.getElementById(steps[n].id).scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); e.preventDefault();
